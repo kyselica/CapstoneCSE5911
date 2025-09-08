@@ -1,0 +1,8 @@
+{
+  "watch": ["src/", "index.html"],
+  "ext": "ts,js,json,html,jpg,png,fbx,glb",
+  "ignore": ["dist/", "node_modules/"],
+  "exec": "yarn build",
+  "delay": 1000,
+  "verbose": true
+}

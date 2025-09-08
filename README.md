@@ -1,6 +1,6 @@
 # 3D Heart Visualization - TypeScript Edition
 
-A beautiful, interactive 3D heart model built with Three.js and TypeScript, featuring a complete Docker-based development environment.
+Interactive 3D heart model built with Three.js and TypeScript, featuring a complete Docker-based development environment.
 
 ## Features
 
@@ -22,15 +22,27 @@ A beautiful, interactive 3D heart model built with Three.js and TypeScript, feat
 
 2. **Enter the development container**:
    ```bash
-   docker compose exec dev bash
+   docker compose exec dev sh
    ```
 
-3. **Inside the container, run the development server**:
+3. **Inside the container, install dependencies, build and run**:
    ```bash
+   yarn install 
+   yarn build
    yarn dev
    ```
 
 4. **Open your browser** and navigate to `http://localhost:3000`
+
+5. **Shutdown**:
+   Ctrl+C to stop container
+   Exit container:
+   ```bash
+   exit
+   ```
+   ```bash
+   docker compose down
+   ```
 
 ## Development Scripts
 
