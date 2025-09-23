@@ -1,6 +1,8 @@
+// Initially created with Cursor using claude-4-sonnet
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import { HeartController } from './HeartController.js';
 
 // Global variables with proper types
 let scene: THREE.Scene;
@@ -10,25 +12,27 @@ let controls: OrbitControls | null = null;
 let heart: THREE.Object3D;
 let heartGroup: THREE.Group;
 let animationId: number | undefined;
-let isAnimating: boolean = true;
+let isAnimating: boolean = true; 
 let fbxLoader: FBXLoader;
-let mixer: THREE.AnimationMixer | null = null;
-let heartBeatAction: THREE.AnimationAction | null = null;
-let clock: THREE.Clock;
 let textureLoader: THREE.TextureLoader;
 let heartTexture: THREE.Texture | null = null;
 
+// Blendshapes/Morph targets variables for FBX
+let morphTargetMeshes: THREE.Mesh[] = [];
+let root: THREE.Bone | null = null;
+
+// Heart controller singleton
+let heartController: HeartController = HeartController.getInstance();
+
 // Initialize the 3D scene
 function init(): void {
-    console.log('Initializing 3D scene...');
-    
     // Create scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f8ff); // Light blue-white background (AliceBlue)
+    scene.background = new THREE.Color(0x171717);
     
     // Create camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 2.5); // Start more zoomed in (was 5, now 2.5)
+    camera.position.set(0, 0, 4); // Set initial zoom further out
     
     // Create renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -44,44 +48,34 @@ function init(): void {
     }
     
     // Create controls
-    console.log('Creating OrbitControls...');
     try {
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
-        controls.minDistance = 1; // Allow closer zoom (was 2)
-        controls.maxDistance = 15; // Reduced max zoom out (was 20)
-        controls.maxPolarAngle = Math.PI;
-        console.log('OrbitControls created successfully');
+        controls.enablePan = false; // Disable panning
+        controls.enableZoom = false; // Disable zoom controls
+        controls.maxPolarAngle = 1.8;
+        controls.minPolarAngle = 0.8;
+        controls.maxAzimuthAngle = 1;
+        controls.minAzimuthAngle = -.5;
     } catch (error) {
         console.error('Error creating OrbitControls:', error);
-        // Create a simple fallback camera movement
-        createFallbackControls();
     }
     
-    // Initialize FBX loader, texture loader, and animation clock
-    console.log('Initializing loaders...');
+    // Initialize FBX loader and texture loader
     try {
         fbxLoader = new FBXLoader();
         textureLoader = new THREE.TextureLoader();
-        clock = new THREE.Clock();
         
         // Load the heart texture
         loadHeartTexture();
-        
-        console.log('Loaders initialized successfully');
     } catch (error) {
         console.error('Error initializing loaders:', error);
-        createFallbackHeart();
         return;
     }
     
     // Add lighting
     addLighting();
-    
-    // Add ambient particles
-    addParticles();
     
     // Load the heart model
     loadHeartModel();
@@ -93,94 +87,50 @@ function init(): void {
     window.addEventListener('resize', onWindowResize);
 }
 
-// Create fallback controls if OrbitControls fails
-function createFallbackControls(): void {
-    console.log('Creating fallback controls...');
-    let isMouseDown = false;
-    let mouseX = 0;
-    let mouseY = 0;
+// Initialize blendshapes functionality for FBX models
+function initFBXBlendshapes(fbxObject: THREE.Group): void {
+    // Reset morph target meshes array
+    morphTargetMeshes = [];
+    root = null;
     
-    renderer.domElement.addEventListener('mousedown', (event: MouseEvent) => {
-        isMouseDown = true;
-        mouseX = event.clientX;
-        mouseY = event.clientY;
-    });
-    
-    renderer.domElement.addEventListener('mouseup', () => {
-        isMouseDown = false;
-    });
-    
-    renderer.domElement.addEventListener('mousemove', (event: MouseEvent) => {
-        if (isMouseDown) {
-            const deltaX = event.clientX - mouseX;
-            const deltaY = event.clientY - mouseY;
-            
-            camera.position.x += deltaX * 0.01;
-            camera.position.y -= deltaY * 0.01;
-            
-            mouseX = event.clientX;
-            mouseY = event.clientY;
+    // Traverse the FBX object to find bones and morph target meshes
+    fbxObject.traverse((object: any) => {
+        if (object.isBone && !root) {
+            root = object as THREE.Bone;
         }
+        
+        if (!object.isMesh) return;
+        
+        const mesh = object as THREE.Mesh;
+        if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return;
+        
+        morphTargetMeshes.push(mesh);
     });
     
-    renderer.domElement.addEventListener('wheel', (event: WheelEvent) => {
-        const zoom = event.deltaY > 0 ? 1.1 : 0.9;
-        camera.position.multiplyScalar(zoom);
-    });
+    // Initialize heart controller with morph target meshes
+    heartController.initialize(morphTargetMeshes);
+    
+    // Store morph targets globally for access
+    (window as any).morphTargetMeshes = morphTargetMeshes;
+    (window as any).updateBlendshapes = (blendshapes: any) => heartController.applyExternalBlendshapes(blendshapes);
 }
 
-// Create a fallback heart if GLB loading fails
-function createFallbackHeart(): void {
-    console.log('Creating fallback heart...');
-    
-    // Create a simple heart shape
-    const heartGeometry = new THREE.SphereGeometry(1, 32, 32);
-    const heartMaterial = createHeartMaterial();
-    
-    heart = new THREE.Mesh(heartGeometry, heartMaterial);
-    heart.castShadow = true;
-    heart.receiveShadow = true;
-    
-    heartGroup = new THREE.Group();
-    heartGroup.add(heart);
-    scene.add(heartGroup);
-    
-    // Hide loading message
-    const loadingElement = document.getElementById('loading');
-    if (loadingElement) {
-        loadingElement.style.display = 'none';
-    }
-    
-    console.log('Fallback heart created');
-}
 
-// Load the rigged heart model
+// Load the shape-keyed heart model and separate into top and bottom halves
 function loadHeartModel(): void {
-    console.log('Starting to load FBX heart model...');
     const loadingElement = document.getElementById('loading');
     
-    // Add a timeout in case the loading hangs
-    const loadingTimeout = setTimeout(() => {
-        console.log('Loading timeout reached, creating fallback heart');
-        if (loadingElement) {
-            loadingElement.innerHTML = `
-                <div style="color: #ffaa00; margin-bottom: 15px;">⏰</div>
-                Loading taking too long...<br>
-                <small>Creating fallback heart model...</small>
-            `;
-        }
-        setTimeout(createFallbackHeart, 1000);
-    }, 10000); // 10 second timeout
-    
+    // Load FBX model
     fbxLoader.load(
         './heart.fbx',
         function (object: THREE.Group) {
             // Successfully loaded the FBX model
-            console.log('FBX Heart model loaded successfully!', object);
-            clearTimeout(loadingTimeout);
             
             // Start with the original object as heart
             heart = object;
+            
+            // Initialize blendshapes functionality for this FBX model
+            initFBXBlendshapes(object);
             
             // Get the original object dimensions before any modifications
             const box = new THREE.Box3().setFromObject(object);
@@ -195,22 +145,8 @@ function loadHeartModel(): void {
             // Center the heart
             heart.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
             
-            // Setup animation mixer for the rigged model
-            mixer = new THREE.AnimationMixer(heart);
-            
-            // Check if the FBX has animations
-            if (object.animations && object.animations.length > 0) {
-                // Use the first animation (typically the heart beat)
-                const heartBeatClip = object.animations[0];
-                if (heartBeatClip) {
-                    heartBeatAction = mixer.clipAction(heartBeatClip);
-                    heartBeatAction.setLoop(THREE.LoopRepeat, Infinity);
-                    heartBeatAction.play();
-                }
-            } else {
-                // Create a custom beating animation using scale
-                createCustomHeartBeatAnimation();
-            }
+            // Start heart controller animation
+            heartController.start();
             
             // Enable shadows and apply materials for all meshes in the model
             object.traverse(function (child: THREE.Object3D) {
@@ -223,10 +159,12 @@ function loadHeartModel(): void {
                 }
             });
             
-            // Create a group for the heart
+            // Create a group for the heart first
             heartGroup = new THREE.Group();
-            heartGroup.add(heart);
             scene.add(heartGroup);
+            
+            // Add the heart directly to the scene
+            heartGroup.add(object);
             
             // Heart successfully loaded and configured
             
@@ -238,31 +176,13 @@ function loadHeartModel(): void {
         },
         function (xhr: ProgressEvent<EventTarget>) {
             // Loading progress
-            if (xhr.lengthComputable) {
+            if (xhr.lengthComputable && loadingElement) {
                 const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
-                console.log('Loading progress:', percent + '%');
-                if (loadingElement) {
-                    loadingElement.innerHTML = `
-                        <div class="loading-spinner"></div>
-                        Loading Realistic Heart Model... ${percent}%
-                    `;
-                }
-            }
-        },
-        function (error: unknown) {
-            // Error loading
-            console.error('Error loading heart model:', error);
-            clearTimeout(loadingTimeout);
-            if (loadingElement) {
                 loadingElement.innerHTML = `
-                    <div style="color: #ff6b6b; margin-bottom: 15px;">⚠️</div>
-                    Error loading heart model:<br>
-                    <small>${error instanceof Error ? error.message : 'Unknown error'}</small><br>
-                    <small>Creating fallback heart model...</small>
+                    <div class="loading-spinner"></div>
+                    Loading... ${percent}%
                 `;
             }
-            // Create fallback heart after a short delay
-            setTimeout(createFallbackHeart, 1000);
         }
     );
 }
@@ -312,35 +232,6 @@ function createHeartMaterial(): THREE.MeshPhongMaterial {
     return new THREE.MeshPhongMaterial(materialConfig);
 }
 
-
-// Create a custom heart beat animation using scale keyframes
-function createCustomHeartBeatAnimation(): void {
-    if (!heart || !mixer) return;
-    
-    // Create keyframe tracks for scaling animation
-    const times = [0, 0.3, 0.6]; // Animation keyframe times (in seconds)
-    const scaleValues = [
-        1.0, 1.0, 1.0,    // Normal size
-        1.15, 1.15, 1.15, // Expanded (systole)
-        1.0, 1.0, 1.0     // Back to normal (diastole)
-    ];
-    
-    // Create scale track
-    const scaleTrack = new THREE.VectorKeyframeTrack(
-        '.scale', // Target property
-        times,
-        scaleValues
-    );
-    
-    // Create animation clip
-    const heartBeatClip = new THREE.AnimationClip('HeartBeat', 0.6, [scaleTrack]);
-    
-    // Create and play the animation
-    heartBeatAction = mixer.clipAction(heartBeatClip);
-    heartBeatAction.setLoop(THREE.LoopRepeat, Infinity);
-    heartBeatAction.play();
-}
-
 // Add lighting to the scene
 function addLighting(): void {
     // Ambient light - much brighter for overall scene illumination
@@ -386,54 +277,12 @@ function addLighting(): void {
     scene.add(coolLight);
 }
 
-// Add floating particles for atmosphere
-function addParticles(): void {
-    const particleCount = 100;
-    const particles = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
-    
-    for (let i = 0; i < particleCount; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * 20;
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-        
-        colors[i * 3] = Math.random() * 0.5 + 0.5;
-        colors[i * 3 + 1] = Math.random() * 0.3;
-        colors[i * 3 + 2] = Math.random() * 0.5 + 0.5;
-    }
-    
-    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    
-    const particleMaterial = new THREE.PointsMaterial({
-        size: 0.05,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.6
-    });
-    
-    const particleSystem = new THREE.Points(particles, particleMaterial);
-    scene.add(particleSystem);
-}
-
 // Animation loop
 function animate(): void {
     animationId = requestAnimationFrame(animate);
     
-    // Update animation mixer for heart beating
-    if (mixer && isAnimating) {
-        const delta = clock.getDelta();
-        mixer.update(delta);
-    }
-    
-    if (isAnimating && heartGroup) {
-        // Gentle rotation of the heart
-        heartGroup.rotation.y += 0.003;
-        
-        // Subtle floating motion
-        heartGroup.position.y = Math.sin(Date.now() * 0.001) * 0.1;
-    }
+    // Update heart controller
+    heartController.update();
     
     // Update controls
     if (controls && controls.update) {
@@ -453,7 +302,7 @@ function onWindowResize(): void {
 
 // Reset camera to default position
 function resetCamera(): void {
-    camera.position.set(0, 0, 2.5); // Match the new closer starting position
+    camera.position.set(0, 0, 4); // Match the initial zoom position
     if (controls && controls.reset) {
         controls.reset();
     }
@@ -462,18 +311,16 @@ function resetCamera(): void {
 // Toggle heart animation
 function toggleAnimation(): void {
     isAnimating = !isAnimating;
-    const btn = (event?.target as HTMLButtonElement);
+    const btn = document.querySelector('.control-btn[onclick="toggleAnimation()"]') as HTMLButtonElement;
     if (btn) {
-        btn.textContent = isAnimating ? 'Pause Animation' : 'Resume Animation';
+        btn.textContent = isAnimating ? 'Pause Animation' : 'Start Animation';
     }
     
-    // Control heart beat animation
-    if (heartBeatAction) {
-        if (isAnimating) {
-            heartBeatAction.paused = false;
-        } else {
-            heartBeatAction.paused = true;
-        }
+    // Control heart controller
+    if (isAnimating) {
+        heartController.start();
+    } else {
+        heartController.stop();
     }
     
     // Resume animation if it was paused
@@ -482,16 +329,36 @@ function toggleAnimation(): void {
     }
 }
 
+// Set heart cycle duration directly (in milliseconds)
+function setHeartCycleDuration(duration: number): void {
+    heartController.setCycleDuration(duration);
+}
+
+// Set heart rate in BPM
+function setHeartBPM(bpm: number): void {
+    heartController.setBPM(bpm);
+}
+
 // Make functions globally accessible for HTML buttons
 declare global {
     interface Window {
         resetCamera: () => void;
         toggleAnimation: () => void;
+        setHeartCycleDuration: (duration: number) => void;
+        setHeartBPM: (bpm: number) => void;
+        updateBlendshapes: (blendshapes: any) => void;
+        heartController: HeartController;
+        morphTargetMeshes: THREE.Mesh[];
+        heartMorphTargets: any;
     }
 }
 
 window.resetCamera = resetCamera;
 window.toggleAnimation = toggleAnimation;
+window.setHeartCycleDuration = setHeartCycleDuration;
+window.setHeartBPM = setHeartBPM;
+window.updateBlendshapes = (blendshapes: any) => heartController.applyExternalBlendshapes(blendshapes);
+window.heartController = heartController;
 
 // Initialize when page loads
 window.addEventListener('load', init);
