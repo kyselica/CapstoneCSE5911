@@ -13,40 +13,15 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
             overflow: hidden;
             height: 100vh;
+            background: #171717;
         }
 
         #container {
             width: 100%;
             height: 100vh;
             position: relative;
-        }
-
-        #info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #2c3e50;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        #info h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        #info p {
-            font-size: 14px;
-            opacity: 0.8;
-            line-height: 1.4;
         }
 
         #loading {
@@ -103,26 +78,76 @@
             background: rgba(52, 73, 94, 1);
             transform: translateY(-2px);
         }
+
+        .speed-control {
+            background: rgba(52, 73, 94, 0.8);
+            border: 1px solid rgba(52, 73, 94, 0.3);
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .speed-control label {
+            white-space: nowrap;
+        }
+
+        .speed-control input[type="range"] {
+            width: 100px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .speed-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .speed-control input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        #speedValue {
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div id="container">
-        <div id="info">
-            <h1>❤️ 3D Heart Visualization</h1>
-            <p>Use your mouse to explore the realistic heart model:<br>
-            • Left click + drag to rotate<br>
-            • Right click + drag to pan<br>
-            • Scroll to zoom in/out</p>
-        </div>
-        
         <div id="loading">
             <div class="loading-spinner"></div>
             Loading Realistic Heart Model...
         </div>
-        
         <div class="controls">
             <button class="control-btn" onclick="resetCamera()">Reset View</button>
-            <button class="control-btn" onclick="toggleAnimation()">Toggle Animation</button>
+            <button class="control-btn" onclick="toggleAnimation()">Pause Animation</button>
+            <div class="speed-control">
+                <label for="bpmSlider">Heart Rate (BPM):</label>
+                <input type="range" id="bpmSlider" min="30" max="180" step="5" value="60" 
+                       oninput="setHeartBPM(parseInt(this.value)); document.getElementById('bpmValue').textContent = this.value + ' BPM';">
+                <span id="bpmValue">60 BPM</span>
+            </div>
         </div>
     </div>
 
@@ -135,6 +160,6 @@
         }
     }
     </script>
-    <script type="module" src="heart.js"></script>
+    <script type="module" src="App.js"></script>
 </body>
 </html>
