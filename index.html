@@ -93,6 +93,48 @@
             font-size: 14px;
         }
 
+        .rhythm-control {
+            background: rgba(52, 73, 94, 0.8);
+            border: 1px solid rgba(52, 73, 94, 0.3);
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .rhythm-control select {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .rhythm-control select option {
+            background: #34495e;
+            color: white;
+        }
+
+        .sound-control {
+            background: rgba(52, 73, 94, 0.8);
+            border: 1px solid rgba(52, 73, 94, 0.3);
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
         .speed-control label {
             white-space: nowrap;
         }
@@ -142,12 +184,32 @@
         <div class="controls">
             <button class="control-btn" onclick="resetCamera()">Reset View</button>
             <button class="control-btn" onclick="toggleAnimation()">Pause Animation</button>
+            
+            <div class="rhythm-control">
+                <label for="rhythmSelect">Heart Rhythm:</label>
+                <select id="rhythmSelect" onchange="switchHeartRhythm(this.value)">
+                    <option value="Realistic Heart Rhythm">Realistic Heart Rhythm</option>
+                    <option value="Lub-Dub">Lub-Dub</option>
+                    <option value="Tachycardia (Fast Heart)">Tachycardia (Fast Heart)</option>
+                    <option value="Bradycardia (Slow Heart)">Bradycardia (Slow Heart)</option>
+                </select>
+            </div>
+            
             <div class="speed-control">
                 <label for="bpmSlider">Heart Rate (BPM):</label>
                 <input type="range" id="bpmSlider" min="30" max="180" step="5" value="60" 
                        oninput="setHeartBPM(parseInt(this.value)); document.getElementById('bpmValue').textContent = this.value + ' BPM';">
                 <span id="bpmValue">60 BPM</span>
             </div>
+            
+            <div class="sound-control">
+                <label for="volumeSlider">Sound Volume:</label>
+                <input type="range" id="volumeSlider" min="0" max="100" step="5" value="70" 
+                       oninput="setHeartSoundVolume(this.value/100); document.getElementById('volumeValue').textContent = this.value + '%';">
+                <span id="volumeValue">70%</span>
+            </div>
+            
+            <button class="control-btn" onclick="toggleHeartSoundVariations()">Toggle Sound Variations</button>
         </div>
     </div>
 
