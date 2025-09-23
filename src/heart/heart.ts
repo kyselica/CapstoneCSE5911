@@ -350,7 +350,34 @@ declare global {
         heartController: HeartController;
         morphTargetMeshes: THREE.Mesh[];
         heartMorphTargets: any;
+        switchHeartRhythm: (rhythmName: string) => void;
+        setHeartSoundVolume: (volume: number) => void;
+        toggleHeartSoundVariations: () => void;
+        getAvailableHeartRhythms: () => string[];
     }
+}
+
+// Heart rhythm control functions
+function switchHeartRhythm(rhythmName: string): void {
+    const success = heartController.switchToRhythmByName(rhythmName);
+    if (success) {
+        console.log(`Switched to heart rhythm: ${rhythmName}`);
+    }
+}
+
+function setHeartSoundVolume(volume: number): void {
+    heartController.setSoundVolume(volume);
+    console.log(`Heart sound volume set to: ${(volume * 100).toFixed(0)}%`);
+}
+
+function toggleHeartSoundVariations(): void {
+    const current = heartController.areSoundVariationsEnabled();
+    heartController.setSoundVariations(!current);
+    console.log(`Heart sound variations ${!current ? 'enabled' : 'disabled'}`);
+}
+
+function getAvailableHeartRhythms(): string[] {
+    return heartController.getAvailableRhythms().map(rhythm => rhythm.name);
 }
 
 window.resetCamera = resetCamera;
@@ -359,3 +386,7 @@ window.setHeartCycleDuration = setHeartCycleDuration;
 window.setHeartBPM = setHeartBPM;
 window.updateBlendshapes = (blendshapes: any) => heartController.applyExternalBlendshapes(blendshapes);
 window.heartController = heartController;
+window.switchHeartRhythm = switchHeartRhythm;
+window.setHeartSoundVolume = setHeartSoundVolume;
+window.toggleHeartSoundVariations = toggleHeartSoundVariations;
+window.getAvailableHeartRhythms = getAvailableHeartRhythms;

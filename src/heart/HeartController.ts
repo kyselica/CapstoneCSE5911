@@ -1,7 +1,7 @@
 // Initially created with Cursor using claude-4-sonnet
 import * as THREE from 'three';
 import { CurveFunction, MotionCurves } from '../utils/curves.js';
-import { defaultRhythm, Rhythm } from './heartRhythms/Rhythm.js';
+import { defaultRhythm, Rhythm, availableRhythms } from './heartRhythms/Rhythm.js';
 
 type AnimationKeyframe = {
     time: number;
@@ -46,6 +46,8 @@ export class HeartController {
     private audioContext: AudioContext | null = null;
     private soundBuffers: Map<string, AudioBuffer> = new Map();
     private lastPlayedSounds: Map<string, number> = new Map();
+    private soundVolume: number = 0.7; // Default volume
+    private enableSoundVariations: boolean = true; // Add subtle timing variations
     
     // Blendshapes
     private morphTargetMeshes: THREE.Mesh[] = [];
@@ -166,12 +168,66 @@ export class HeartController {
     }
     
     /**
-     * Example method to demonstrate rhythm switching
-     * You can call this to switch to a different rhythm pattern
+     * Switch to a different rhythm pattern
      */
     public switchToRhythm(rhythm: Rhythm): void {
         this.setRhythm(rhythm);
         console.log(`Switched to rhythm: ${rhythm.name}`);
+    }
+    
+    /**
+     * Get all available rhythm patterns
+     */
+    public getAvailableRhythms(): Rhythm[] {
+        return availableRhythms;
+    }
+    
+    /**
+     * Switch to rhythm by name
+     */
+    public switchToRhythmByName(name: string): boolean {
+        const rhythm = availableRhythms.find(r => r.name === name);
+        if (rhythm) {
+            this.switchToRhythm(rhythm);
+            return true;
+        }
+        console.warn(`Rhythm "${name}" not found`);
+        return false;
+    }
+    
+    /**
+     * Get current rhythm name
+     */
+    public getCurrentRhythmName(): string {
+        return this.rhythm.name;
+    }
+    
+    /**
+     * Set sound volume (0.0 to 1.0)
+     */
+    public setSoundVolume(volume: number): void {
+        this.soundVolume = Math.max(0, Math.min(1, volume));
+    }
+    
+    /**
+     * Get current sound volume
+     */
+    public getSoundVolume(): number {
+        return this.soundVolume;
+    }
+    
+    /**
+     * Enable or disable sound timing variations for more realism
+     */
+    public setSoundVariations(enabled: boolean): void {
+        this.enableSoundVariations = enabled;
+    }
+    
+    /**
+     * Check if sound variations are enabled
+     */
+    public areSoundVariationsEnabled(): boolean {
+        return this.enableSoundVariations;
     }
     
     /**
@@ -323,9 +379,17 @@ export class HeartController {
     private processSoundKeyframe(keyframe: SoundKeyframe, cycleProgress: number): void {
         const { time, soundPath } = keyframe;
         
-        // Check if we're at the exact time for this sound
-        const timeTolerance = 0.01; // 1% tolerance for timing
-        if (Math.abs(cycleProgress - time) < timeTolerance) {
+        // Add subtle timing variations for more realism
+        let adjustedTime = time;
+        if (this.enableSoundVariations) {
+            // Add ±2% timing variation
+            const variation = (Math.random() - 0.5) * 0.04; // ±2%
+            adjustedTime = Math.max(0, Math.min(1, time + variation));
+        }
+        
+        // Check if we're at the adjusted time for this sound
+        const timeTolerance = 0.015; // 1.5% tolerance for timing
+        if (Math.abs(cycleProgress - adjustedTime) < timeTolerance) {
             // Prevent playing the same sound multiple times in the same cycle
             const lastPlayed = this.lastPlayedSounds.get(soundPath) || 0;
             const currentCycle = Math.floor((this.currentTime - this.startTime) / this.cycleDuration);
@@ -358,10 +422,23 @@ export class HeartController {
                 this.soundBuffers.set(soundPath, buffer);
             }
             
-            // Create and play the sound
+            // Create and play the sound with volume control
             const source = this.audioContext.createBufferSource();
+            const gainNode = this.audioContext.createGain();
+            
+            // Set volume
+            gainNode.gain.value = this.soundVolume;
+            
+            // Add subtle pitch variation for realism (±3%)
+            if (this.enableSoundVariations) {
+                const pitchVariation = 1 + (Math.random() - 0.5) * 0.06; // ±3%
+                source.playbackRate.value = pitchVariation;
+            }
+            
+            // Connect audio nodes
             source.buffer = buffer;
-            source.connect(this.audioContext.destination);
+            source.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
             source.start();
             
         } catch (error) {
