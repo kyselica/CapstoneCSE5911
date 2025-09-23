@@ -359,5 +359,3 @@ window.setHeartCycleDuration = setHeartCycleDuration;
 window.setHeartBPM = setHeartBPM;
 window.updateBlendshapes = (blendshapes: any) => heartController.applyExternalBlendshapes(blendshapes);
 window.heartController = heartController;
-
-// Note: App.ts now handles the initialization
