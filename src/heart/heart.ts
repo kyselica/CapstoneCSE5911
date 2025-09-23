@@ -25,7 +25,7 @@ let root: THREE.Bone | null = null;
 let heartController: HeartController = HeartController.getInstance();
 
 // Initialize the 3D scene
-function init(): void {
+export function init(): void {
     // Create scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x171717);
@@ -360,5 +360,4 @@ window.setHeartBPM = setHeartBPM;
 window.updateBlendshapes = (blendshapes: any) => heartController.applyExternalBlendshapes(blendshapes);
 window.heartController = heartController;
 
-// Initialize when page loads
-window.addEventListener('load', init);
+// Note: App.ts now handles the initialization

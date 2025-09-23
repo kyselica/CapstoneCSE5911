@@ -1,6 +1,6 @@
 // Initially created with Cursor using claude-4-sonnet
 import * as THREE from 'three';
-import { CurveFunction, MotionCurves } from './curves.js';
+import { CurveFunction, MotionCurves } from '../utils/curves.js';
 
 interface BlendshapeCategory {
     categoryName: string;
@@ -188,7 +188,7 @@ export class HeartController {
         
         if (cycleProgress < phaseLength) {
             // Phase 1: LA and RA contract (0 to 1) over 0.25 seconds
-            const phaseProgress = cycleProgress / phaseLength * .6;
+            const phaseProgress = cycleProgress / phaseLength;
             laTarget = this.applyMotionCurve(phaseProgress);
             raTarget = this.applyMotionCurve(phaseProgress);
         } else if (cycleProgress < phaseLength * 2) {
@@ -198,7 +198,7 @@ export class HeartController {
             raTarget = this.applyMotionCurve(1 - phaseProgress);
         } else if (cycleProgress < phaseLength * 3) {
             // Phase 3: LV and RV contract (0 to 1) over 0.25 seconds
-            const phaseProgress = (cycleProgress - phaseLength * 2) / phaseLength * .7;
+            const phaseProgress = (cycleProgress - phaseLength * 2) / phaseLength;
             lvTarget = this.applyMotionCurve(phaseProgress);
             rvTarget = this.applyMotionCurve(phaseProgress);
         } else {
