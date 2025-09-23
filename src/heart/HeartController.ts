@@ -1,6 +1,22 @@
 // Initially created with Cursor using claude-4-sonnet
 import * as THREE from 'three';
 import { CurveFunction, MotionCurves } from '../utils/curves.js';
+import { defaultRhythm, Rhythm } from './heartRhythms/Rhythm.js';
+
+type AnimationKeyframe = {
+    time: number;
+    type: "ANIMATION";
+    animationEnd: number;
+    blendshape: ("LA" | "RA" | "LV" | "RV")[];
+    value: number;
+    curveFunction: CurveFunction;
+};
+
+type SoundKeyframe = {
+    time: number;
+    type: "SOUND";
+    soundPath: string;
+};
 
 interface BlendshapeCategory {
     categoryName: string;
@@ -24,13 +40,19 @@ export class HeartController {
     private cycleDuration: number = 1000;
     private currentTime: number = 0;
     private motionCurveType: CurveFunction = MotionCurves.BATHTUB;
+    private rhythm: Rhythm = defaultRhythm;
+    
+    // Sound management
+    private audioContext: AudioContext | null = null;
+    private soundBuffers: Map<string, AudioBuffer> = new Map();
+    private lastPlayedSounds: Map<string, number> = new Map();
     
     // Blendshapes
     private morphTargetMeshes: THREE.Mesh[] = [];
     private currentBlendshapes: Map<string, number> = new Map();
     private targetBlendshapes: Map<string, number> = new Map();
     
-    // Heart chamber names
+    // Heart chamber names mapping from rhythm names to actual blendshape names
     private readonly CHAMBER_NAMES = {
         LA: 'LA 0.5',
         RA: 'RA 0.5', 
@@ -61,6 +83,18 @@ export class HeartController {
      */
     public initialize(meshes: THREE.Mesh[]): void {
         this.morphTargetMeshes = meshes;
+        this.initializeAudio();
+    }
+    
+    /**
+     * Initialize audio context for sound playback
+     */
+    private initializeAudio(): void {
+        try {
+            this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        } catch (error) {
+            console.warn('Web Audio API not supported:', error);
+        }
     }
     
     /**
@@ -115,6 +149,29 @@ export class HeartController {
      */
     public setMotionCurveType(curveType: CurveFunction): void {
         this.motionCurveType = curveType;
+    }
+    
+    /**
+     * Set the heart rhythm pattern
+     */
+    public setRhythm(rhythm: Rhythm): void {
+        this.rhythm = rhythm;
+    }
+    
+    /**
+     * Get the current rhythm
+     */
+    public getRhythm(): Rhythm {
+        return this.rhythm;
+    }
+    
+    /**
+     * Example method to demonstrate rhythm switching
+     * You can call this to switch to a different rhythm pattern
+     */
+    public switchToRhythm(rhythm: Rhythm): void {
+        this.setRhythm(rhythm);
+        console.log(`Switched to rhythm: ${rhythm.name}`);
     }
     
     /**
@@ -175,44 +232,32 @@ export class HeartController {
     }
     
     /**
-     * Update the 4-phase heart cycle animation
+     * Update the heart cycle animation based on the current rhythm
      */
+    // Generated with Cursor using claude-4-sonnet
     private updateHeartCycle(): void {
         // Calculate progress within the current cycle (0 to 1)
         const elapsed = (this.currentTime - this.startTime) % this.cycleDuration;
         const cycleProgress = elapsed / this.cycleDuration;
         
-        // Calculate target blendshape values based on 4-phase cycle
-        const phaseLength = 0.25; // Each phase is 25% of the cycle
-        let laTarget = 0, raTarget = 0, lvTarget = 0, rvTarget = 0;
-        
-        if (cycleProgress < phaseLength) {
-            // Phase 1: LA and RA contract (0 to 1) over 0.25 seconds
-            const phaseProgress = cycleProgress / phaseLength;
-            laTarget = this.applyMotionCurve(phaseProgress);
-            raTarget = this.applyMotionCurve(phaseProgress);
-        } else if (cycleProgress < phaseLength * 2) {
-            // Phase 2: LA and RA relax (1 to 0) over 0.25 seconds
-            const phaseProgress = (cycleProgress - phaseLength) / phaseLength;
-            laTarget = this.applyMotionCurve(1 - phaseProgress);
-            raTarget = this.applyMotionCurve(1 - phaseProgress);
-        } else if (cycleProgress < phaseLength * 3) {
-            // Phase 3: LV and RV contract (0 to 1) over 0.25 seconds
-            const phaseProgress = (cycleProgress - phaseLength * 2) / phaseLength;
-            lvTarget = this.applyMotionCurve(phaseProgress);
-            rvTarget = this.applyMotionCurve(phaseProgress);
-        } else {
-            // Phase 4: LV and RV relax (1 to 0) over 0.25 seconds
-            const phaseProgress = (cycleProgress - phaseLength * 3) / phaseLength;
-            lvTarget = this.applyMotionCurve(1 - phaseProgress);
-            rvTarget = this.applyMotionCurve(1 - phaseProgress);
+        // Reset all target values to 0
+        for (const chamberName of Object.values(this.CHAMBER_NAMES)) {
+            this.targetBlendshapes.set(chamberName, 0);
         }
         
-        // Update target values
-        this.targetBlendshapes.set(this.CHAMBER_NAMES.LA, laTarget);
-        this.targetBlendshapes.set(this.CHAMBER_NAMES.RA, raTarget);
-        this.targetBlendshapes.set(this.CHAMBER_NAMES.LV, lvTarget);
-        this.targetBlendshapes.set(this.CHAMBER_NAMES.RV, rvTarget);
+        // Process animation keyframes from the rhythm
+        if (this.rhythm.animation) {
+            for (const keyframe of this.rhythm.animation) {
+                this.processAnimationKeyframe(keyframe, cycleProgress);
+            }
+        }
+        
+        // Process sound keyframes from the rhythm
+        if (this.rhythm.sound) {
+            for (const keyframe of this.rhythm.sound) {
+                this.processSoundKeyframe(keyframe, cycleProgress);
+            }
+        }
         
         // Use smooth transitions between current and target values
         const lerpFactor = 0.1; // Smooth interpolation factor
@@ -246,19 +291,81 @@ export class HeartController {
         }
     }
     
+    
     /**
-     * Apply the selected motion curve to a progress value (0 to 1)
+     * Process an animation keyframe based on cycle progress
      */
-    private applyMotionCurve(t: number): number {
-        switch (this.motionCurveType) {
-            case MotionCurves.BELL:
-                return MotionCurves.BELL(t);
-            case MotionCurves.BATHTUB:
-                return MotionCurves.BATHTUB(t);
-            case MotionCurves.LERP:
-                return MotionCurves.LERP(t);
-            default:
-                return MotionCurves.BELL(t);
+    private processAnimationKeyframe(keyframe: AnimationKeyframe, cycleProgress: number): void {
+        const { time, animationEnd, blendshape, value, curveFunction } = keyframe;
+        
+        // Check if we're within the keyframe's time range
+        if (cycleProgress >= time && cycleProgress <= animationEnd) {
+            // Calculate progress within this keyframe (0 to 1)
+            const keyframeDuration = animationEnd - time;
+            const keyframeProgress = (cycleProgress - time) / keyframeDuration;
+            
+            // Apply the curve function to get the animated value
+            const animatedValue = curveFunction(keyframeProgress) * value;
+            
+            // Apply to all specified blendshapes
+            for (const chamber of blendshape) {
+                const chamberName = this.CHAMBER_NAMES[chamber as keyof typeof this.CHAMBER_NAMES];
+                if (chamberName) {
+                    this.targetBlendshapes.set(chamberName, animatedValue);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Process a sound keyframe based on cycle progress
+     */
+    private processSoundKeyframe(keyframe: SoundKeyframe, cycleProgress: number): void {
+        const { time, soundPath } = keyframe;
+        
+        // Check if we're at the exact time for this sound
+        const timeTolerance = 0.01; // 1% tolerance for timing
+        if (Math.abs(cycleProgress - time) < timeTolerance) {
+            // Prevent playing the same sound multiple times in the same cycle
+            const lastPlayed = this.lastPlayedSounds.get(soundPath) || 0;
+            const currentCycle = Math.floor((this.currentTime - this.startTime) / this.cycleDuration);
+            
+            if (lastPlayed < currentCycle) {
+                this.playSound(soundPath);
+                this.lastPlayedSounds.set(soundPath, currentCycle);
+            }
+        }
+    }
+    
+    /**
+     * Play a sound from the given path
+     */
+    private async playSound(soundPath: string): Promise<void> {
+        if (!this.audioContext) {
+            console.warn('Audio context not available');
+            return;
+        }
+        
+        try {
+            // Check if we already have the buffer cached
+            let buffer = this.soundBuffers.get(soundPath);
+            
+            if (!buffer) {
+                // Load the sound file
+                const response = await fetch(soundPath);
+                const arrayBuffer = await response.arrayBuffer();
+                buffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                this.soundBuffers.set(soundPath, buffer);
+            }
+            
+            // Create and play the sound
+            const source = this.audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(this.audioContext.destination);
+            source.start();
+            
+        } catch (error) {
+            console.warn(`Failed to play sound ${soundPath}:`, error);
         }
     }
     
