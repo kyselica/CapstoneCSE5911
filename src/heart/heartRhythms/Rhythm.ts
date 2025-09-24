@@ -1,5 +1,5 @@
 import { CurveFunction } from "../../utils/curves.js";
-import { lubDubRhythm } from "./lubDub.js";
+import { lubDubRhythm } from "./LubDub.js";
 import { realisticRhythm, tachycardiaRhythm, bradycardiaRhythm } from "./RealisticRhythm.js";
 
 type AnimationKeyframe = {
