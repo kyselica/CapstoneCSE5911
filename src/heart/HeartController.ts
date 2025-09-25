@@ -39,6 +39,7 @@ export class HeartController {
     private startTime: number = 0;
     private cycleDuration: number = 1000;
     private currentTime: number = 0;
+    private prevTime: number = 0;
     private motionCurveType: CurveFunction = MotionCurves.BATHTUB;
     private rhythm: Rhythm = defaultRhythm;
     
@@ -129,6 +130,8 @@ export class HeartController {
         // Convert BPM to milliseconds per beat
         // 60 BPM = 1 beat per second = 1000ms per beat
         this.cycleDuration = (60 / bpm) * 1000;
+        this.startTime = performance.now();
+        this.lastPlayedSounds.clear();
     }
     
     /**
@@ -251,7 +254,7 @@ export class HeartController {
         if (!this.isRunning || this.morphTargetMeshes.length === 0) {
             return;
         }
-        
+        this.prevTime = this.currentTime;
         this.currentTime = performance.now();
         this.updateHeartCycle();
         this.applyBlendshapes();
@@ -378,24 +381,14 @@ export class HeartController {
      */
     private processSoundKeyframe(keyframe: SoundKeyframe, cycleProgress: number): void {
         const { time, soundPath } = keyframe;
-        
-        // Add subtle timing variations for more realism
-        /*let adjustedTime = time;
-        if (this.enableSoundVariations) {
-            // Add ±2% timing variation
-            const variation = (Math.random() - 0.5) * 0.04; // ±2%
-            adjustedTime = Math.max(0, Math.min(1, time + variation));
-        }
-        */
-
-        // Check if we're at the adjusted time for this sound
-        let keyFrameTime = time;
-        const timeTolerance = 0.015; // 1.5% tolerance for timing
-        if (Math.abs(cycleProgress - keyFrameTime) < timeTolerance) {
-            // Prevent playing the same sound multiple times in the same cycle
-            const lastPlayed = this.lastPlayedSounds.get(soundPath) || 0;
-            const currentCycle = Math.floor((this.currentTime - this.startTime) / this.cycleDuration);
-            
+        console.log("progress:", cycleProgress.toFixed(3), "keyframe:", time);
+        const currentCycle = Math.floor((this.currentTime - this.startTime) / this.cycleDuration);
+        // Gets the exact moment the sound should be played within the current cycle
+        const beatTime = this.startTime + currentCycle * this.cycleDuration + time * this.cycleDuration;
+        // This checks to make sure we have passed the exact time when the sound should play
+        if (this.prevTime < beatTime && this.currentTime >= beatTime) {
+            const lastPlayed = this.lastPlayedSounds.get(soundPath) || -1;
+            // Only play sound if it wasn't played during the current cycle (every keyframe sound only plays once during the cycle)
             if (lastPlayed < currentCycle) {
                 this.playSound(soundPath);
                 this.lastPlayedSounds.set(soundPath, currentCycle);
