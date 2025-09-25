@@ -370,12 +370,6 @@ function setHeartSoundVolume(volume: number): void {
     console.log(`Heart sound volume set to: ${(volume * 100).toFixed(0)}%`);
 }
 
-function toggleHeartSoundVariations(): void {
-    const current = heartController.areSoundVariationsEnabled();
-    heartController.setSoundVariations(!current);
-    console.log(`Heart sound variations ${!current ? 'enabled' : 'disabled'}`);
-}
-
 function getAvailableHeartRhythms(): string[] {
     return heartController.getAvailableRhythms().map(rhythm => rhythm.name);
 }
@@ -388,5 +382,4 @@ window.updateBlendshapes = (blendshapes: any) => heartController.applyExternalBl
 window.heartController = heartController;
 window.switchHeartRhythm = switchHeartRhythm;
 window.setHeartSoundVolume = setHeartSoundVolume;
-window.toggleHeartSoundVariations = toggleHeartSoundVariations;
 window.getAvailableHeartRhythms = getAvailableHeartRhythms;

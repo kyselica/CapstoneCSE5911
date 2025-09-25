@@ -48,7 +48,6 @@ export class HeartController {
     private soundBuffers: Map<string, AudioBuffer> = new Map();
     private lastPlayedSounds: Map<string, number> = new Map();
     private soundVolume: number = 0.7; // Default volume
-    private enableSoundVariations: boolean = true; // Add subtle timing variations
     
     // Blendshapes
     private morphTargetMeshes: THREE.Mesh[] = [];
@@ -217,20 +216,6 @@ export class HeartController {
      */
     public getSoundVolume(): number {
         return this.soundVolume;
-    }
-    
-    /**
-     * Enable or disable sound timing variations for more realism
-     */
-    public setSoundVariations(enabled: boolean): void {
-        this.enableSoundVariations = enabled;
-    }
-    
-    /**
-     * Check if sound variations are enabled
-     */
-    public areSoundVariationsEnabled(): boolean {
-        return this.enableSoundVariations;
     }
     
     /**
@@ -425,10 +410,8 @@ export class HeartController {
             gainNode.gain.value = this.soundVolume;
             
             // Add subtle pitch variation for realism (±3%)
-            if (this.enableSoundVariations) {
-                const pitchVariation = 1 + (Math.random() - 0.5) * 0.06; // ±3%
-                source.playbackRate.value = pitchVariation;
-            }
+            const pitchVariation = 1 + (Math.random() - 0.5) * 0.06; // ±3%
+            source.playbackRate.value = pitchVariation;
             
             // Connect audio nodes
             source.buffer = buffer;
