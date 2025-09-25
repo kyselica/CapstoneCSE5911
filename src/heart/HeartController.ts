@@ -105,6 +105,7 @@ export class HeartController {
     public start(): void {
         this.isRunning = true;
         this.startTime = performance.now();
+        this.lastPlayedSounds.clear();
     }
     
     /**
@@ -174,7 +175,6 @@ export class HeartController {
      */
     public switchToRhythm(rhythm: Rhythm): void {
         this.setRhythm(rhythm);
-        console.log(`Switched to rhythm: ${rhythm.name}`);
     }
     
     /**
@@ -299,7 +299,7 @@ export class HeartController {
         // Process sound keyframes from the rhythm
         if (this.rhythm.sound) {
             for (const keyframe of this.rhythm.sound) {
-                this.processSoundKeyframe(keyframe, cycleProgress);
+                this.processSoundKeyframe(keyframe);
             }
         }
         
@@ -364,12 +364,13 @@ export class HeartController {
     /**
      * Process a sound keyframe based on cycle progress
      */
-    private processSoundKeyframe(keyframe: SoundKeyframe, cycleProgress: number): void {
+    private processSoundKeyframe(keyframe: SoundKeyframe): void {
         const { time, soundPath } = keyframe;
-        console.log("progress:", cycleProgress.toFixed(3), "keyframe:", time);
         const currentCycle = Math.floor((this.currentTime - this.startTime) / this.cycleDuration);
+        
         // Gets the exact moment the sound should be played within the current cycle
-        const beatTime = this.startTime + currentCycle * this.cycleDuration + time * this.cycleDuration;
+        const beatTime = this.startTime + (currentCycle + time) * this.cycleDuration;
+
         // This checks to make sure we have passed the exact time when the sound should play
         if (this.prevTime < beatTime && this.currentTime >= beatTime) {
             const lastPlayed = this.lastPlayedSounds.get(soundPath) || -1;
