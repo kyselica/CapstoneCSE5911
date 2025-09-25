@@ -380,16 +380,18 @@ export class HeartController {
         const { time, soundPath } = keyframe;
         
         // Add subtle timing variations for more realism
-        let adjustedTime = time;
+        /*let adjustedTime = time;
         if (this.enableSoundVariations) {
             // Add ±2% timing variation
             const variation = (Math.random() - 0.5) * 0.04; // ±2%
             adjustedTime = Math.max(0, Math.min(1, time + variation));
         }
-        
+        */
+
         // Check if we're at the adjusted time for this sound
+        let keyFrameTime = time;
         const timeTolerance = 0.015; // 1.5% tolerance for timing
-        if (Math.abs(cycleProgress - adjustedTime) < timeTolerance) {
+        if (Math.abs(cycleProgress - keyFrameTime) < timeTolerance) {
             // Prevent playing the same sound multiple times in the same cycle
             const lastPlayed = this.lastPlayedSounds.get(soundPath) || 0;
             const currentCycle = Math.floor((this.currentTime - this.startTime) / this.cycleDuration);
