@@ -1,5 +1,6 @@
 import { CurveFunction } from "../../utils/curves.js";
 import { lubDubRhythm } from "./LubDub.js";
+import { s4GallopRhythm } from "./S4Gallop.js";
 import { realisticRhythm, tachycardiaRhythm, bradycardiaRhythm } from "./RealisticRhythm.js";
 
 type AnimationKeyframe = {
@@ -23,12 +24,13 @@ export type Rhythm = {
 	sound?: SoundKeyframe[];
 };
 
-export const defaultRhythm: Rhythm = realisticRhythm;
+export const defaultRhythm: Rhythm = lubDubRhythm;
 
 // Export all available rhythms
 export const availableRhythms: Rhythm[] = [
-  realisticRhythm,
-  lubDubRhythm,
-  tachycardiaRhythm,
-  bradycardiaRhythm
+	lubDubRhythm,
+	//realisticRhythm,
+	//tachycardiaRhythm,
+	//bradycardiaRhythm,
+	s4GallopRhythm
 ];

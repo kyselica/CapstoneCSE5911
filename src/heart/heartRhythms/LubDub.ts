@@ -4,7 +4,7 @@ import { Rhythm } from "./Rhythm.js";
 export const lubDubRhythm: Rhythm = {
   name: "Lub-Dub",
   animation: [
-    // Atrial Systole (0-15% of cycle) - Atria contract to push blood into ventricles
+    // Atria contract
     {
       time: 0,
       type: "ANIMATION",
@@ -13,7 +13,7 @@ export const lubDubRhythm: Rhythm = {
       value: 1,
       curveFunction: MotionCurves.ATRIAL_CONTRACTION,
     },
-    // Atrial Diastole (15-30% of cycle) - Atria relax and begin filling
+    // Atria relax
     {
       time: 0.15,
       type: "ANIMATION",
@@ -22,7 +22,7 @@ export const lubDubRhythm: Rhythm = {
       value: 0,
       curveFunction: MotionCurves.DIASTOLIC_RELAXATION,
     },
-    // Ventricular Systole (30-65% of cycle) - Ventricles contract powerfully
+    // Ventricles contract 
     {
       time: 0.3,
       type: "ANIMATION",
@@ -31,7 +31,7 @@ export const lubDubRhythm: Rhythm = {
       value: 1,
       curveFunction: MotionCurves.VENTRICULAR_CONTRACTION,
     },
-    // Ventricular Diastole (65-100% of cycle) - Ventricles relax and fill
+    // Ventricles relax
     {
       time: 0.65,
       type: "ANIMATION",
@@ -51,13 +51,13 @@ export const lubDubRhythm: Rhythm = {
     },
   ],
   sound: [
-    // S1 sound - Closure of mitral and tricuspid valves (start of ventricular systole)
+    // S1 sound
     {
       time: 0.32,
       type: "SOUND",
       soundPath: "sounds/heart-normal-S1.wav",
     },
-    // S2 sound - Closure of aortic and pulmonary valves (end of ventricular systole)
+    // S2 sound
     {
       time: 0.62,
       type: "SOUND",
