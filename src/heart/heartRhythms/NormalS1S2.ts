@@ -1,8 +1,8 @@
 import { MotionCurves } from "../../utils/curves.js";
 import { Rhythm } from "./Rhythm.js";
 
-export const lubDubRhythm: Rhythm = {
-  name: "Lub-Dub",
+export const normalS1S2Rhythm: Rhythm = {
+  name: "Normal S1 S2",
   animation: [
     // Atria contract
     {
