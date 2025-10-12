@@ -7,19 +7,16 @@ export const s3GallopRhythm: Rhythm = {
         // S1 sound
         {
             time: 0.32,
-            type: "SOUND",
             soundPath: "sounds/heart-normal-S1.wav",
         },
         // S2 sound
         {
             time: 0.62,
-            type: "SOUND",
             soundPath: "sounds/heart-normal-S2.wav",
         },
         // S3 sound
         {
             time: 0.72,
-            type: "SOUND",
             soundPath: "sounds/s3.wav",
         },
     ]

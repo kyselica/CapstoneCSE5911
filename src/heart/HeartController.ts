@@ -2,21 +2,7 @@
 import * as THREE from 'three';
 import { CurveFunction, MotionCurves } from '../utils/curves.js';
 import { defaultRhythm, Rhythm, availableRhythms } from './heartRhythms/Rhythm.js';
-
-type AnimationKeyframe = {
-    time: number;
-    type: "ANIMATION";
-    animationEnd: number;
-    blendshape: ("LA" | "RA" | "LV" | "RV")[];
-    value: number;
-    curveFunction: CurveFunction;
-};
-
-type SoundKeyframe = {
-    time: number;
-    type: "SOUND";
-    soundPath: string;
-};
+import { AnimationKeyframe, SoundKeyframe } from './heartRhythms/Rhythm.js';
 
 interface BlendshapeCategory {
     categoryName: string;
@@ -284,21 +270,25 @@ export class HeartController {
         const elapsed = (this.currentTime - this.startTime) % this.cycleDuration;
         const cycleProgress = elapsed / this.cycleDuration;
         
+        // Get the animation and sound keyframes from the current rhythm
+        const animationKeyframes = this.rhythm.animation ?? defaultRhythm.animation;
+        const soundKeyframes = this.rhythm.sound ?? defaultRhythm.sound;
+        
         // Reset all target values to 0
         for (const chamberName of Object.values(this.CHAMBER_NAMES)) {
             this.targetBlendshapes.set(chamberName, 0);
         }
         
         // Process animation keyframes from the rhythm
-        if (this.rhythm.animation) {
-            for (const keyframe of this.rhythm.animation) {
+        if (animationKeyframes) {
+            for (const keyframe of animationKeyframes) {
                 this.processAnimationKeyframe(keyframe, cycleProgress);
             }
         }
         
         // Process sound keyframes from the rhythm
-        if (this.rhythm.sound) {
-            for (const keyframe of this.rhythm.sound) {
+        if (soundKeyframes) {
+            for (const keyframe of soundKeyframes) {
                 this.processSoundKeyframe(keyframe);
             }
         }
