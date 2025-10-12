@@ -3,6 +3,7 @@ import { normalS1S2Rhythm } from "./NormalS1S2.js";
 import { s4GallopRhythm } from "./S4Gallop.js";
 import { s3GallopRhythm } from "./S3Gallop.js";
 import { midSystolicClickRhythm } from "./Mid-SystolicClick.js";
+import { splitS1Rhythm } from "./SplitS1.js"
 import { realisticRhythm, tachycardiaRhythm, bradycardiaRhythm } from "./RealisticRhythm.js";
 
 type AnimationKeyframe = {
@@ -36,5 +37,6 @@ export const availableRhythms: Rhythm[] = [
 	//bradycardiaRhythm,
 	s4GallopRhythm,
 	s3GallopRhythm,
-	midSystolicClickRhythm
+	midSystolicClickRhythm,
+	splitS1Rhythm
 ];
