@@ -311,9 +311,13 @@ function resetCamera(): void {
 // Toggle heart animation
 function toggleAnimation(): void {
     isAnimating = !isAnimating;
-    const btn = document.querySelector('.control-btn[onclick="toggleAnimation()"]') as HTMLButtonElement;
+    const btn = document.getElementById('playPauseBtn') as HTMLButtonElement;
     if (btn) {
-        btn.textContent = isAnimating ? 'Pause Animation' : 'Start Animation';
+        const icon = btn.querySelector('.icon');
+        if (icon) {
+            icon.textContent = isAnimating ? '⏸' : '▶';
+        }
+        btn.setAttribute('title', isAnimating ? 'Pause' : 'Play');
     }
     
     // Control heart controller

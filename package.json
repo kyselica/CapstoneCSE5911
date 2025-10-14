@@ -7,7 +7,7 @@
     "dev": "yarn build && concurrently \"yarn nodemon\" \"yarn serve\"",
     "build": "tsc && yarn copy-assets",
     "build:watch": "tsc --watch",
-    "copy-assets": "cp -r src/assets/* dist/ 2>/dev/null || true && cp index.html dist/",
+    "copy-assets": "cp -r src/assets dist/ 2>/dev/null || true && cp index.html dist/",
     "serve": "http-server dist -p 3000 -c-1 --cors",
     "clean": "rm -rf dist",
     "start": "yarn build && yarn serve",
