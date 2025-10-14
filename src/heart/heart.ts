@@ -122,7 +122,7 @@ function loadHeartModel(): void {
     
     // Load FBX model
     fbxLoader.load(
-        './heart.fbx',
+        './assets/heart.fbx',
         function (object: THREE.Group) {
             // Successfully loaded the FBX model
             
@@ -190,7 +190,7 @@ function loadHeartModel(): void {
 // Load the heart texture
 function loadHeartTexture(): void {
     textureLoader.load(
-        './corazon_atropellado.jpg',
+        './assets/corazon_atropellado.jpg',
         function (texture: THREE.Texture) {
             // Successfully loaded texture
             heartTexture = texture;

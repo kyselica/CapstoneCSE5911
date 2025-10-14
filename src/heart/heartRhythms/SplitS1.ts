@@ -7,12 +7,12 @@ export const splitS1Rhythm: Rhythm = {
         // Split S1 sound
         {
             time: 0.32,
-            soundPath: "sounds/splitS1.wav",
+            soundPath: "assets/sounds/splitS1.wav",
         },
         // S2 sound
         {
             time: 0.62,
-            soundPath: "sounds/heart-normal-S2.wav",
+            soundPath: "assets/sounds/heart-normal-S2.wav",
         },
     ]
 };

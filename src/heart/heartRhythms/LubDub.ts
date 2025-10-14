@@ -49,12 +49,12 @@ export const lubDubRhythm: Rhythm = {
     // S1 sound - Closure of mitral and tricuspid valves (start of ventricular systole)
     {
       time: 0.32,
-      soundPath: "sounds/heart-normal-S1.wav",
+      soundPath: "assets/sounds/heart-normal-S1.wav",
     },
     // S2 sound - Closure of aortic and pulmonary valves (end of ventricular systole)
     {
       time: 0.62,
-      soundPath: "sounds/heart-normal-S2.wav",
+      soundPath: "assets/sounds/heart-normal-S2.wav",
     },
   ]
 };
