@@ -3,7 +3,9 @@ import { normalS1S2Rhythm } from "./NormalS1S2.js";
 import { s4GallopRhythm } from "./S4Gallop.js";
 import { s3GallopRhythm } from "./S3Gallop.js";
 import { midSystolicClickRhythm } from "./Mid-SystolicClick.js";
+import { midSystolicMurmurRhythm } from "./Mid-SystolicMurmur.js"
 import { splitS1Rhythm } from "./SplitS1.js"
+import { earlySystolicMurmurRhythm } from "./EarlySystolicMurmur.js";
 
 export type AnimationKeyframe = {
 	time: number;
@@ -31,5 +33,7 @@ export const availableRhythms: Rhythm[] = [
 	s4GallopRhythm,
 	s3GallopRhythm,
 	midSystolicClickRhythm,
-	splitS1Rhythm
+	splitS1Rhythm,
+	midSystolicMurmurRhythm,
+	earlySystolicMurmurRhythm
 ];
