@@ -1,0 +1,1 @@
+{"version":3,"file":"SplitS1.js","sourceRoot":"","sources":["../../../src/heart/heartRhythms/SplitS1.ts"],"names":[],"mappings":"AAGA,MAAM,CAAC,MAAM,aAAa,GAAW;IACjC,IAAI,EAAE,UAAU;IAChB,KAAK,EAAE;QACH,iBAAiB;QACjB;YACI,IAAI,EAAE,IAAI;YACV,SAAS,EAAE,2BAA2B;SACzC;QACD,WAAW;QACX;YACI,IAAI,EAAE,IAAI;YACV,SAAS,EAAE,mCAAmC;SACjD;KACJ;CACJ,CAAC"}

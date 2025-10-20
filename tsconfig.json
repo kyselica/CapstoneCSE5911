@@ -4,7 +4,7 @@
     "module": "ES2020",
     "moduleResolution": "node",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "outDir": "./dist",
+    "outDir": "./docs",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
@@ -36,6 +36,6 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "docs"
   ]
 }

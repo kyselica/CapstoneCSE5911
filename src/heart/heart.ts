@@ -122,7 +122,7 @@ function loadHeartModel(): void {
     
     // Load FBX model
     fbxLoader.load(
-        './heart.fbx',
+        './assets/heart.fbx',
         function (object: THREE.Group) {
             // Successfully loaded the FBX model
             
@@ -190,7 +190,7 @@ function loadHeartModel(): void {
 // Load the heart texture
 function loadHeartTexture(): void {
     textureLoader.load(
-        './corazon_atropellado.jpg',
+        './assets/corazon_atropellado.jpg',
         function (texture: THREE.Texture) {
             // Successfully loaded texture
             heartTexture = texture;
@@ -311,9 +311,13 @@ function resetCamera(): void {
 // Toggle heart animation
 function toggleAnimation(): void {
     isAnimating = !isAnimating;
-    const btn = document.querySelector('.control-btn[onclick="toggleAnimation()"]') as HTMLButtonElement;
+    const btn = document.getElementById('playPauseBtn') as HTMLButtonElement;
     if (btn) {
-        btn.textContent = isAnimating ? 'Pause Animation' : 'Start Animation';
+        const icon = btn.querySelector('.icon');
+        if (icon) {
+            icon.textContent = isAnimating ? '⏸' : '▶';
+        }
+        btn.setAttribute('title', isAnimating ? 'Pause' : 'Play');
     }
     
     // Control heart controller
