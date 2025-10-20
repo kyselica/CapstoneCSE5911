@@ -7,17 +7,17 @@ export const midSystolicMurmurRhythm: Rhythm = {
         // S1 sound
         {
             time: 0.32,
-            soundPath: "sounds/heart-normal-S1.wav",
+            soundPath: "assets/sounds/heart-normal-S1.wav",
         },
         // Mid-Systolic Murmur sound
         {
             time: 0.40,
-            soundPath: "sounds/mid-Systolic-Murmur.wav",
+            soundPath: "assets/sounds/mid-Systolic-Murmur.wav",
         },
         // S2 sound
         {
             time: 0.62,
-            soundPath: "sounds/heart-normal-S2.wav",
+            soundPath: "assets/sounds/heart-normal-S2.wav",
         },
     ]
 };
