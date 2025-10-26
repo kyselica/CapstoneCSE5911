@@ -6,6 +6,9 @@ import { midSystolicClickRhythm } from "./Mid-SystolicClick.js";
 import { midSystolicMurmurRhythm } from "./Mid-SystolicMurmur.js"
 import { splitS1Rhythm } from "./SplitS1.js"
 import { earlySystolicMurmurRhythm } from "./EarlySystolicMurmur.js";
+import { lateSystolicMurmurRhythm } from "./LateSystolicMurmur.js";
+import { holosystolicMurmurRhythm } from "./HolosystolicMurmur.js";
+import { clickLateSystolicMurmurRhythm } from "./Click-Late-SystolicMurmur.js";
 
 export type AnimationKeyframe = {
 	time: number;
@@ -35,5 +38,8 @@ export const availableRhythms: Rhythm[] = [
 	midSystolicClickRhythm,
 	splitS1Rhythm,
 	midSystolicMurmurRhythm,
-	earlySystolicMurmurRhythm
+	earlySystolicMurmurRhythm,
+	lateSystolicMurmurRhythm,
+	holosystolicMurmurRhythm,
+	clickLateSystolicMurmurRhythm
 ];
