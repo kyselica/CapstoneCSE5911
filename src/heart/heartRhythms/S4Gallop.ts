@@ -1,6 +1,7 @@
 import { MotionCurves } from "../../utils/curves.js";
 import { Rhythm } from "./Rhythm.js";
 
+// Apex, Left Ducubitus, Bell - S4 Gallop - Left Ventricular Hypertrophy
 export const s4GallopRhythm: Rhythm = {
 	name: "S4 Gallop",
     sound: [

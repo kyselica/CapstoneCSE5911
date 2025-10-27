@@ -1,6 +1,7 @@
 import { MotionCurves } from "../../utils/curves.js";
 import { Rhythm } from "./Rhythm.js";
 
+// Apex, Supine, Bell - Late Systolic Murmur - Mitral Regurg due to MVP
 export const lateSystolicMurmurRhythm: Rhythm = {
     name: "Late Systolic Murmur",
     sound: [
@@ -11,7 +12,7 @@ export const lateSystolicMurmurRhythm: Rhythm = {
         },
         // Late Systolic Murmur sound
         {
-            time: 0.50,
+            time: 0.53,
             soundPath: "assets/sounds/late-Systolic-Murmur.wav",
         },
         // S2 sound

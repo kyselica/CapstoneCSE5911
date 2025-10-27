@@ -1,6 +1,7 @@
 import { MotionCurves } from "../../utils/curves.js";
 import { Rhythm } from "./Rhythm.js";
 
+// Apex, Left Ducubitus, Bell - Sys Click w/ Late Sys Murmur - MVP w/ Mitral Regurg
 export const clickLateSystolicMurmurRhythm: Rhythm = {
     name: "Click w/ Late Systolic Murmur",
     sound: [
@@ -11,12 +12,12 @@ export const clickLateSystolicMurmurRhythm: Rhythm = {
         },
         // Click sound
         {
-            time: 0.48,
+            time: 0.50,
             soundPath: "assets/sounds/click.wav",
         },
         // Late Systolic Murmur sound
         {
-            time: 0.50,
+            time: 0.53,
             soundPath: "assets/sounds/late-Systolic-Murmur.wav",
         },
         // S2 sound
